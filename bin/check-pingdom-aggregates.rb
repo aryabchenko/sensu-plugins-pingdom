@@ -8,10 +8,7 @@
 #
 # Usage
 #   Authentication
-#     Pingdom's API requires 3 parameters for authentication:
-#       --user: the user's email
-#       --password: the user's password
-#       --application-key: create one at https://my.pingdom.com/account/appkeys
+#     Pingdom's API 3.1 requires just 1 parameter for authentication - the key
 #
 #   Thresholds of website checks down
 #     --crit
@@ -26,6 +23,7 @@
 #
 # Copyright 2013 Rock Solid Ops Inc. <hello@rocksolidops.com>
 # Created by Mathieu Martin, 2013
+# Modified by Anton Ryabchenko, 2019
 #
 # Released under the same terms as Sensu (the MIT license); see LICENSE
 # for details.
@@ -35,12 +33,6 @@ require 'rest-client'
 require 'json'
 
 class CheckPingdomAggregates < Sensu::Plugin::Check::CLI
-  option :user,
-         short: '-u EMAIL',
-         required: true
-  option :password,
-         short: '-p PASSWORD',
-         required: true
   option :application_key,
          short: '-k APP_KEY',
          long: '--application-key APP_KEY',
@@ -87,10 +79,8 @@ class CheckPingdomAggregates < Sensu::Plugin::Check::CLI
 
   def api_call
     resource = RestClient::Resource.new(
-      'https://api.pingdom.com/api/2.0/checks',
-      user: config[:user],
-      password: config[:password],
-      headers: { 'App-Key' => config[:application_key] },
+      'https://api.pingdom.com/api/3.1/checks',
+      headers: { 'Authorization' => "Bearer #{config[:application_key]}" },
       timeout: config[:timeout]
     )
     JSON.parse(resource.get, symbolize_names: true)
